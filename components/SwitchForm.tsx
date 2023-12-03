@@ -1,9 +1,9 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+import axios from "axios"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import axios from "axios"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -14,12 +14,10 @@ import {
     FormItem,
     FormLabel,
 } from "@/components/ui/form"
-import { Switch } from "@/components/ui/switch"
-import { toast } from "./ui/use-toast"
 import { useStore } from "@/store"
-import { useEffect, useState } from "react"
 import { File } from "buffer"
-// import { toast } from "@/components/ui/use-toast"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
 const FormSchema = z.object({
     excel: z.boolean().default(false),
@@ -28,16 +26,9 @@ const FormSchema = z.object({
 
 export function SwitchForm() {
     const { state, addExcelColonnes, addDbColonnes, addConfigColonnes } = useStore();
-    const [excelFile, setExcelFile] = useState<File>(state.excel.fichier);
-    const [configFile, setConfigFile] = useState<File>(state.config.fichier);
+    const [excelFile, setExcelFile] = useState<File | null>(state.excel.fichier);
+    const [configFile, setConfigFile] = useState<File | null>(state.config.fichier);
     const [loading, setLoading] = useState(false);
-
-    // useEffect(() => {
-    //     // if (state.excel.fichier && state.config.fichier)
-    //     //     setExcelFile(state.excel.fichier?.name)
-    //     // else throw new Error('no excel file ')
-    //     console.log(state)
-    // }, [state])
 
     useEffect(() => {
         setExcelFile(state.excel.fichier);
@@ -51,17 +42,15 @@ export function SwitchForm() {
         resolver: zodResolver(FormSchema),
         defaultValues: {
             excel: true,
-            config: false,
+            config: true,
         },
     })
 
     async function onSubmit(data: z.infer<typeof FormSchema>) {
-        console.log(data)
         setLoading(true);
         const formData = new FormData();
         formData.append('data', excelFile as any);
         formData.append('config', configFile as any);
-        // send to server
         try {
             const res = await axios.post('http://127.0.0.1:5000/upload', formData, {
                 headers: {
@@ -70,20 +59,13 @@ export function SwitchForm() {
             })
 
             setLoading(false);
-            console.log("data from server : \n",res.data)
             addExcelColonnes(res.data.data);
             addConfigColonnes(res.data.config);
 
-            /**
-            * @todo add data to store
-            * const { dbColonnes, excelColonnes } = res;
-            * addExcelColonnes(excelColonnes);
-            * addDbColonnes(dbColonnes);
-            */
-
         } catch (error) {
-            console.log(error);
             setLoading(false);
+            toast('error while uploading files, please check your console for more details');
+            throw error as Error;
         }
 
     }
@@ -91,18 +73,6 @@ export function SwitchForm() {
 
 
     return (
-        // <div>
-        //     <h1>imported files </h1>
-        //     <div className="flex flex-col">
-        //         <div>
-        //             {excelFile && <p>excel file : {excelFile.name}</p>}
-        //         </div>
-        //         <div>
-
-        //             {configFile && <p>config file : {configFile.name}</p>}
-        //         </div>
-        //     </div>
-        // </div>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(() => onSubmit(form.getValues()))} className="w-full space-y-6">
                 <div>
@@ -116,14 +86,14 @@ export function SwitchForm() {
                                     <div className="space-y-0.5">
                                         <FormLabel>Excel</FormLabel>
                                         <FormDescription>
-                                            excel file : {excelFile && excelFile.name}
+                                            excel file name : {excelFile && excelFile.name}
                                         </FormDescription>
                                     </div>
                                     <FormControl>
-                                        <Switch
+                                        {/* <Switch
                                             checked={field.value}
                                             onCheckedChange={field.onChange}
-                                        />
+                                        /> */}
                                     </FormControl>
                                 </FormItem>
                             )}
@@ -136,14 +106,14 @@ export function SwitchForm() {
                                     <div className="space-y-0.5">
                                         <FormLabel>Configuration</FormLabel>
                                         <FormDescription>
-                                            config file : {configFile && configFile?.name}
+                                            config file name : {configFile && configFile?.name}
                                         </FormDescription>
                                     </div>
                                     <FormControl>
-                                        <Switch
+                                        {/* <Switch
                                             checked={field.value}
                                             onCheckedChange={field.onChange}
-                                        />
+                                        /> */}
                                     </FormControl>
                                 </FormItem>
                             )}
@@ -151,9 +121,9 @@ export function SwitchForm() {
 
                     </div>
                 </div>
-                <Button type="submit">
+                <Button disabled={excelFile === null || configFile === null} type="submit">
                     {loading ? 'loading...' : 'Analyse'}
-                    </Button>
+                </Button>
             </form>
         </Form>
 

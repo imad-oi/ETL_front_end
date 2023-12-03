@@ -3,6 +3,7 @@
 import {
     Table,
     TableBody,
+    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
@@ -73,7 +74,10 @@ const ExcelTable: FC<TableProps> = ({ tableName, columns, isDBTable }) => {
                         <TableRow key={index} className='h-14'>
                             <TableCell className="font-medium">
                                 <div className="flex items-center space-x-2">
-                                    {isDBTable && <Checkbox id="terms" />}
+                                    {/* {isDBTable && <Checkbox id="terms" />} */}
+                                    <span>
+                                        {index + 1} -
+                                    </span>
                                     <label
                                         htmlFor="terms"
                                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
