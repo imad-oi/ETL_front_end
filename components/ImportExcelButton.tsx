@@ -9,7 +9,7 @@ type ImportExcelButtonProps = {
     title: string,
     fileChange: (file: File) => void
 }
-const ImportButton: React.FC<ImportExcelButtonProps> = ({ name, title, fileChange }) => {
+const ImportExcelButton: React.FC<ImportExcelButtonProps> = ({ name, title, fileChange }) => {
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -21,7 +21,7 @@ const ImportButton: React.FC<ImportExcelButtonProps> = ({ name, title, fileChang
 
     return (
         <Button>
-            <label htmlFor="file-input" className='flex hover:cursor-pointer' >
+            <label htmlFor="file-excel" className='flex hover:cursor-pointer' >
                 <Image src="/import.png" className='text-white' alt="import" width={16} height={24} />
                 <span className='px-2 '>
                     {title}
@@ -29,8 +29,8 @@ const ImportButton: React.FC<ImportExcelButtonProps> = ({ name, title, fileChang
             </label>
             <input
                 type="file"
-                id="file-input"
-                accept=".yaml"
+                id="file-excel"
+                accept=".xlsx , .xls"
                 style={{ display: 'none' }}
                 onChange={handleFileChange} />
         </Button>
@@ -38,4 +38,4 @@ const ImportButton: React.FC<ImportExcelButtonProps> = ({ name, title, fileChang
     );
 };
 
-export default ImportButton;
+export default ImportExcelButton;

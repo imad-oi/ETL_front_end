@@ -4,16 +4,14 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableFooter,
     TableHead,
     TableHeader,
     TableRow
 } from "@/components/ui/table"
+import { useStore } from "@/store"
 import { FC, useEffect, useState } from 'react'
 import { FaArrowDownLong, FaArrowUpLong } from 'react-icons/fa6'
-import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
-import { useStore } from "@/store"
 
 type TableProps = {
     tableName: string,
@@ -24,7 +22,9 @@ type TableProps = {
 
 const ExcelTable: FC<TableProps> = ({ tableName, columns, isDBTable }) => {
     const [tableColumns, setTableColumns] = useState<any[]>(columns);
-    const { state, updateExcelColonnesTrie } = useStore();
+    const { state, updateExcelColonnesTrie, addExcelColonnes } = useStore();
+
+    // console.log("from data table  : \n", tableColumns);
 
     const moveColumnUp = (index: number) => {
         if (index === 0) return;
@@ -32,6 +32,7 @@ const ExcelTable: FC<TableProps> = ({ tableName, columns, isDBTable }) => {
         const columnToMove = updatedColumns[index];
         updatedColumns.splice(index, 1);
         updatedColumns.splice(index - 1, 0, columnToMove);
+        addExcelColonnes(updatedColumns);
         setTableColumns(updatedColumns);
     };
 
@@ -41,19 +42,23 @@ const ExcelTable: FC<TableProps> = ({ tableName, columns, isDBTable }) => {
         const columnToMove = updatedColumns[index];
         updatedColumns.splice(index, 1);
         updatedColumns.splice(index + 1, 0, columnToMove);
+        addExcelColonnes(updatedColumns);
         setTableColumns(updatedColumns);
     };
 
     useEffect(() => {
-        if (isDBTable) return;
-        const columnsWithIndex = tableColumns.map((column: any, index: number) => ({ ...column, index }));
-        console.log(columnsWithIndex);
-        updateExcelColonnesTrie(columnsWithIndex);
-        console.log(state)
-    }, []);
+        setTableColumns(state.excel.colonnes)
+    }, [state])
+
+    // useEffect(() => {
+    //     if (isDBTable) return;
+    //     const columnsWithIndex = tableColumns.map((column: any, index: number) => ({ ...column, index }));
+    //     console.log(columnsWithIndex);
+    //     // updateExcelColonnesTrie(columnsWithIndex);
+    // }, []);
 
     return (
-        <div>
+        // <div>
             <Table className='rounded overflow-hidden border'>
                 <TableHeader>
                     <TableRow>
@@ -73,7 +78,7 @@ const ExcelTable: FC<TableProps> = ({ tableName, columns, isDBTable }) => {
                                         htmlFor="terms"
                                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                     >
-                                        {column.paymentMethod}
+                                        {columns[index]}
                                     </label>
                                 </div>
                             </TableCell>
@@ -99,7 +104,7 @@ const ExcelTable: FC<TableProps> = ({ tableName, columns, isDBTable }) => {
                     ))}
                 </TableBody>
             </Table>
-        </div>
+        // </div>
     )
 }
 

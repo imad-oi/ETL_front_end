@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch"
 import { toast } from "./ui/use-toast"
 import { useStore } from "@/store"
 import { useEffect, useState } from "react"
+import { File } from "buffer"
 // import { toast } from "@/components/ui/use-toast"
 
 const FormSchema = z.object({
@@ -26,15 +27,25 @@ const FormSchema = z.object({
 })
 
 export function SwitchForm() {
-    const { state: { excel, config }, addExcelColonnes, addDbColonnes } = useStore();
-    const [excelFile, setExcelFile] = useState();
+    const { state, addExcelColonnes, addDbColonnes, addConfigColonnes } = useStore();
+    const [excelFile, setExcelFile] = useState<File>(state.excel.fichier);
+    const [configFile, setConfigFile] = useState<File>(state.config.fichier);
+    const [loading, setLoading] = useState(false);
+
+    // useEffect(() => {
+    //     // if (state.excel.fichier && state.config.fichier)
+    //     //     setExcelFile(state.excel.fichier?.name)
+    //     // else throw new Error('no excel file ')
+    //     console.log(state)
+    // }, [state])
 
     useEffect(() => {
-        if (excel)
-            setExcelFile(excel.fichier?.name)
-        else throw new Error('no excel file ')
-    }, [excel, config])
+        setExcelFile(state.excel.fichier);
+    }, [state.excel.fichier])
 
+    useEffect(() => {
+        setConfigFile(state.config.fichier);
+    }, [state.config.fichier])
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
@@ -44,14 +55,24 @@ export function SwitchForm() {
         },
     })
 
-    function onSubmit(data: z.infer<typeof FormSchema>) {
+    async function onSubmit(data: z.infer<typeof FormSchema>) {
         console.log(data)
+        setLoading(true);
+        const formData = new FormData();
+        formData.append('data', excelFile as any);
+        formData.append('config', configFile as any);
         // send to server
         try {
-            const res = axios.post('http://localhost:5000/api/analyse', {
-                excel: excel.fichier,
-                config: config.fichier
+            const res = await axios.post('http://127.0.0.1:5000/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
             })
+
+            setLoading(false);
+            console.log("data from server : \n",res.data)
+            addExcelColonnes(res.data.data);
+            addConfigColonnes(res.data.config);
 
             /**
             * @todo add data to store
@@ -62,22 +83,26 @@ export function SwitchForm() {
 
         } catch (error) {
             console.log(error);
+            setLoading(false);
         }
 
-        // show toast
-        toast({
-            title: "You submitted the following values:",
-            description: (
-                <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                    <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-                </pre>
-            ),
-        })
     }
 
 
 
     return (
+        // <div>
+        //     <h1>imported files </h1>
+        //     <div className="flex flex-col">
+        //         <div>
+        //             {excelFile && <p>excel file : {excelFile.name}</p>}
+        //         </div>
+        //         <div>
+
+        //             {configFile && <p>config file : {configFile.name}</p>}
+        //         </div>
+        //     </div>
+        // </div>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(() => onSubmit(form.getValues()))} className="w-full space-y-6">
                 <div>
@@ -91,7 +116,7 @@ export function SwitchForm() {
                                     <div className="space-y-0.5">
                                         <FormLabel>Excel</FormLabel>
                                         <FormDescription>
-                                            excel file : {excel?.ficher?.name}
+                                            excel file : {excelFile && excelFile.name}
                                         </FormDescription>
                                     </div>
                                     <FormControl>
@@ -111,7 +136,7 @@ export function SwitchForm() {
                                     <div className="space-y-0.5">
                                         <FormLabel>Configuration</FormLabel>
                                         <FormDescription>
-                                            config file : {config?.fichier?.name}
+                                            config file : {configFile && configFile?.name}
                                         </FormDescription>
                                     </div>
                                     <FormControl>
@@ -126,8 +151,11 @@ export function SwitchForm() {
 
                     </div>
                 </div>
-                <Button type="submit">Analyse</Button>
+                <Button type="submit">
+                    {loading ? 'loading...' : 'Analyse'}
+                    </Button>
             </form>
         </Form>
+
     )
 }
