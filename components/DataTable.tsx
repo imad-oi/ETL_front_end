@@ -60,7 +60,7 @@ const ExcelTable: FC<TableProps> = ({ tableName, columns, isDBTable }) => {
 
     return (
         // <div>
-            <Table className='rounded overflow-hidden border'>
+            <Table className='rounded border'>
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-full font-bold text-lg">{tableName}</TableHead>

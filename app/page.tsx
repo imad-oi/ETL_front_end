@@ -103,20 +103,19 @@ export default function Home() {
       </div>
       <hr />
       <div className='flex-1'>
-        <p className='text-xl text-slate-500  tracking-tight'>
+        <p className='text-xl text-slate-500  tracking-tight my-2'>
           Match every column from excel to database
         </p>
-
         {
           state.excel.colonnes && state.config.colonnes &&
-          <div className='flex'>
+          <div className='flex border rounded-sm'>
             <DataTable
-              tableName='Table de base de donnee'
+              tableName='Configuration Table '
               isDBTable={true}
               columns={configColonnes} />
 
             <DataTable
-              tableName='Table de excel'
+              tableName='Excel Table '
               columns={excelColonnes} />
           </div>}
         <Button
